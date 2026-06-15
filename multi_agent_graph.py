@@ -389,7 +389,7 @@ def editor_node(state: AgentState):
     elif "transformerlight" in path_lower: algo = "TransformerLight"
     else:
         # 在学术提问中模糊匹配算法名称
-        for possible in ["colight", "transformerlight", "mplight", "presslight", "maxpressure", "dqn", "alignlight", "adco"]:
+        for possible in ["colight", "transformerlight", "mplight", "presslight", "maxpressure", "dqn", "alignlight", "adco", "frap", "attendlight", "intellilight", "efficientlight", "sotl"]:
             if possible in user_question.lower():
                 algo = possible.upper()
                 break
@@ -464,7 +464,7 @@ def editor_node(state: AgentState):
         
         # 提取问题中出现的所有算法，在 arXiv 中用 OR 连接查询
         algos_to_search = []
-        for a in ["colight", "transformerlight", "mplight", "presslight", "maxpressure", "dqn", "alignlight", "adco"]:
+        for a in ["colight", "transformerlight", "mplight", "presslight", "maxpressure", "dqn", "alignlight", "adco", "frap", "attendlight", "intellilight", "efficientlight", "sotl"]:
             if a in user_question.lower() or a in search_query.lower():
                 algos_to_search.append(f'all:"{a}"')
         if algos_to_search:
