@@ -1,0 +1,289 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Traffic Agentic Gateway API",
+    "description": "HTTP API gateway to connect local CityFlow parsing, metrics comparison plotting, and academic RAG workflows to Dify.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://host.docker.internal:8000",
+      "description": "Local Traffic Agentic Gateway"
+    }
+  ],
+  "paths": {
+    "/analyze_log": {
+      "post": {
+        "summary": "Extract CityFlow simulation metrics",
+        "description": "Parses and extracts key traffic metrics (like ATT, throughput, etc.) from the training history log folder.",
+        "operationId": "api_analyze_log_analyze_log_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyzeLogRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plot_comparison": {
+      "post": {
+        "summary": "Generate metrics comparison curves",
+        "description": "Generates academic-quality comparison charts for vehicle throughput, average delay, queue length, and speeds, returning the HTTP URL of the image.",
+        "operationId": "api_plot_comparison_plot_comparison_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlotComparisonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search_literature": {
+      "post": {
+        "summary": "Retrieve literature text using local RAG",
+        "description": "Searches the local PDF library for traffic signal control algorithms and methods, retrieving relevant paper paragraphs.",
+        "operationId": "api_search_literature_search_literature_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchLiteratureRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/run_agent_graph": {
+      "post": {
+        "summary": "Run multi-agent graph evaluation workflow",
+        "description": "Executes the complete multi-agent graph workflow (Analyst -> Reviewer -> Editor) to generate a full simulation evaluation or academic analysis report.",
+        "operationId": "api_run_agent_graph_run_agent_graph_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunGraphRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalyzeLogRequest": {
+        "properties": {
+          "log_path": {
+            "type": "string",
+            "title": "Log Path",
+            "description": "The local absolute path of the simulation log folder containing training_history.json"
+          }
+        },
+        "type": "object",
+        "required": [
+          "log_path"
+        ],
+        "title": "AnalyzeLogRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "PlotComparisonRequest": {
+        "properties": {
+          "run1_path": {
+            "type": "string",
+            "title": "Run1 Path",
+            "description": "The local absolute path of the baseline simulation log folder"
+          },
+          "run2_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run2 Path",
+            "description": "The local absolute path of the optimized simulation log folder (optional)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run1_path"
+        ],
+        "title": "PlotComparisonRequest"
+      },
+      "RunGraphRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "The conversational message or question to run through the entire multi-agent graph workflow"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "RunGraphRequest"
+      },
+      "SearchLiteratureRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query",
+            "description": "The academic query regarding traffic signal control algorithms or formulas"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "SearchLiteratureRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

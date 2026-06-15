@@ -1,0 +1,41 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Python virtual environment
+.venv/
+venv/
+ENV/
+env/
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Output / generated temporary files
+evaluation_report.md
+traffic_comparison.png
+
+# Dify local configurations and data volumes (CRITICAL to ignore to prevent leak and large commits)
+.env
+*.env
+dify-main/docker/.env
+dify-main/docker/volumes/
+dify-main/docker/nginx/ssl/
+dify-main/docker/volumes/app/storage/
+dify-main/docker/volumes/db/data/
+dify-main/docker/volumes/redis/data/
+dify-main/docker/volumes/weaviate/
+
+# Archived files
+*.rar
+*.zip
+*.tar.gz
+*.7z
