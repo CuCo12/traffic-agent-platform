@@ -181,8 +181,30 @@ def analyze_cityflow_log(log_path: str) -> str:
 # =====================================================================
 # 步骤 3：定义工具 2 - 在线大模型重排/智能语义检索文献 (Online RAG Reader)
 # =====================================================================
-# 全局文献段落缓存，避免每次工具调用都重新解析所有 PDF (极大提升检索性能与避免磁盘 I/O 延迟)
+# 全局文献段落缓存，增加磁盘持久化，避免容器/服务器重启后重新解析所有 PDF 导致的超时问题
 PAPERS_CACHE = {}
+CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "papers_cache.json")
+
+def load_papers_cache():
+    global PAPERS_CACHE
+    if os.path.exists(CACHE_FILE):
+        try:
+            with open(CACHE_FILE, "r", encoding="utf-8") as f:
+                PAPERS_CACHE = json.load(f)
+                # 确保所有 mtime 都是 float 类型以便于比对
+                for k in list(PAPERS_CACHE.keys()):
+                    PAPERS_CACHE[k] = (float(PAPERS_CACHE[k][0]), PAPERS_CACHE[k][1])
+        except Exception:
+            PAPERS_CACHE = {}
+
+def save_papers_cache():
+    try:
+        with open(CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(PAPERS_CACHE, f, ensure_ascii=False)
+    except Exception:
+        pass
+
+load_papers_cache()
 
 def _parse_pdf_with_tables(file_path: str, filename: str) -> list:
     """
@@ -259,11 +281,13 @@ def search_traffic_literature(query: str) -> str:
 
     global PAPERS_CACHE
     current_files = os.listdir(PAPERS_DIR)
+    cache_updated = False
     
     # 清理缓存中已被删除的文件
     for cached_file in list(PAPERS_CACHE.keys()):
         if cached_file not in current_files:
             del PAPERS_CACHE[cached_file]
+            cache_updated = True
 
     # 1. 在线读取所有本地文件段落 (优先使用内存缓存，基于修改时间进行失效判断)
     for filename in current_files:
@@ -298,6 +322,10 @@ def search_traffic_literature(query: str) -> str:
         
         if file_segments:
             PAPERS_CACHE[filename] = (mtime, file_segments)
+            cache_updated = True
+
+    if cache_updated:
+        save_papers_cache()
 
     # 合并所有段落
     all_segments = []

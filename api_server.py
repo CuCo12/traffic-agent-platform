@@ -12,7 +12,8 @@ CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 if CURRENT_DIR not in sys.path:
     sys.path.append(CURRENT_DIR)
 
-from agent import analyze_cityflow_log, search_traffic_literature
+from agent import analyze_cityflow_log, search_traffic_literature, read_local_paper_content
+from skills.arxiv_searcher import search_latest_arxiv_papers
 from skills.plotter import plot_metrics_comparison
 from multi_agent_graph import app as graph_app
 from langchain_core.messages import HumanMessage
@@ -37,6 +38,12 @@ class PlotComparisonRequest(BaseModel):
 
 class SearchLiteratureRequest(BaseModel):
     query: str = Field(..., description="The academic query regarding traffic signal control algorithms or formulas")
+
+class SearchArxivRequest(BaseModel):
+    query: str = Field(..., description="The search query for arXiv, e.g. 'reinforcement learning traffic signal control'")
+
+class ReadPaperRequest(BaseModel):
+    filename: str = Field(..., description="The filename of the local paper, e.g. 'AlignLight.pdf'")
 
 class RunGraphRequest(BaseModel):
     message: str = Field(..., description="The conversational message or question to run through the entire multi-agent graph workflow")
@@ -83,6 +90,28 @@ def api_search_literature(req: SearchLiteratureRequest):
     """
     try:
         res = search_traffic_literature.invoke({"query": req.query})
+        return {"status": "success", "result": res}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/search_arxiv", summary="Search arXiv academic library online")
+def api_search_arxiv(req: SearchArxivRequest):
+    """
+    Searches the online arXiv repository for the latest academic papers.
+    """
+    try:
+        res = search_latest_arxiv_papers.invoke({"query": req.query})
+        return {"status": "success", "result": res}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/read_paper", summary="Read the full content of a local paper")
+def api_read_paper(req: ReadPaperRequest):
+    """
+    Reads and returns the complete text content of a specified local paper in the papers directory.
+    """
+    try:
+        res = read_local_paper_content.invoke({"filename": req.filename})
         return {"status": "success", "result": res}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

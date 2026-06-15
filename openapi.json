@@ -123,6 +123,80 @@
         }
       }
     },
+    "/search_arxiv": {
+      "post": {
+        "summary": "Search arXiv academic library online",
+        "description": "Searches the online arXiv repository for the latest academic papers.",
+        "operationId": "api_search_arxiv_search_arxiv_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchArxivRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/read_paper": {
+      "post": {
+        "summary": "Read the full content of a local paper",
+        "description": "Reads and returns the complete text content of a specified local paper in the papers directory.",
+        "operationId": "api_read_paper_read_paper_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReadPaperRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/run_agent_graph": {
       "post": {
         "summary": "Run multi-agent graph evaluation workflow",
@@ -216,6 +290,20 @@
         ],
         "title": "PlotComparisonRequest"
       },
+      "ReadPaperRequest": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename",
+            "description": "The filename of the local paper, e.g. 'AlignLight.pdf'"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename"
+        ],
+        "title": "ReadPaperRequest"
+      },
       "RunGraphRequest": {
         "properties": {
           "message": {
@@ -229,6 +317,20 @@
           "message"
         ],
         "title": "RunGraphRequest"
+      },
+      "SearchArxivRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query",
+            "description": "The search query for arXiv, e.g. 'reinforcement learning traffic signal control'"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "SearchArxivRequest"
       },
       "SearchLiteratureRequest": {
         "properties": {
