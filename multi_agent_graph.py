@@ -26,6 +26,7 @@ if CURRENT_DIR not in sys.path:
 from agent import llm, analyze_cityflow_log, search_traffic_literature
 from skills.arxiv_searcher import search_latest_arxiv_papers
 from skills.plotter import plot_metrics_comparison
+from skills.drl_analyzer import analyze_drl_convergence
 
 BASE_DIR = CURRENT_DIR
 
@@ -221,6 +222,25 @@ def data_analyst_node(state: AgentState):
             "messages": [AIMessage(content="分析师：未找到仿真日志数据。", name="analyst")]
         }
 
+    def get_drl_analysis(p):
+        if not p:
+            return None
+        json_path = p
+        if os.path.isdir(p):
+            json_path = os.path.join(p, "training_history.json")
+        if os.path.exists(json_path):
+            import json
+            try:
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                rounds = data.get("rounds", [])
+                att_history = data.get("att_history", [])
+                if rounds and att_history:
+                    return analyze_drl_convergence(rounds, att_history)
+            except Exception as e:
+                log_progress(f"⚠️ 解析 DRL 收敛数据失败: {e}")
+        return None
+
     # 定义多目录指标计算与解析提取函数
     def analyze_paths(paths_input):
         if isinstance(paths_input, list):
@@ -253,6 +273,10 @@ def data_analyst_node(state: AgentState):
                 f"车辆吞吐量 (Throughput) 均值: {avg_tp:.1f} 辆\n\n"
                 f"详细单种子日志参考（首个种子）:\n{analyses[0]}"
             )
+            if paths_input:
+                drl_res = get_drl_analysis(paths_input[0])
+                if drl_res:
+                    summary += f"\n\n{drl_res['summary']}"
             return summary, avg_tp, avg_att
         else:
             res = analyze_cityflow_log.invoke({"log_path": paths_input})
@@ -266,6 +290,10 @@ def data_analyst_node(state: AgentState):
             if tp == 0.0:
                 best_tp_match = re.search(r"最佳吞吐量:\s*([\d\.]+)\s*辆", res)
                 tp = float(best_tp_match.group(1)) if best_tp_match else 0.0
+            
+            drl_res = get_drl_analysis(paths_input)
+            if drl_res:
+                res += f"\n\n{drl_res['summary']}"
             return res, tp, att
 
     # ================= 运行工具解析基准数据 =================
@@ -516,6 +544,10 @@ def editor_node(state: AgentState):
             "【撰写要求】:\n"
             "1. 使用 Markdown 格式详细回答，并包含标题。\n"
             "2. 结构合理，引用准确（写出作者及年份，如 Wei et al. 2019）。\n"
+            "3. 如果问题中【显式要求】提供公式、实现代码、算法设计细节，或者提问本身是深入探讨该算法的数理定义或架构实现（例如询问 CoLight/MaxPressure 等的状态、动作、奖励函数定义或 PyTorch 代码实现）：\n"
+            "   - 请在回答中加入该算法核心的状态空间 (State)、动作空间 (Action) 以及奖励函数 (Reward) 的 LaTeX 数学公式描述。\n"
+            "   - 请提供一个结构清晰、带有详细中文注释的 PyTorch 核心代码骨架（例如 CoLight 的多头图注意力机制或 MaxPressure 的压力计算逻辑等），使用 markdown 代码块包裹。\n"
+            "   - 若用户仅需要简单的概念解答或未询问公式/代码，则保持回答的聚焦与简洁，无需冗余生成公式和代码。\n"
             "请直接输出您的完整学术解答："
         )
     else:
@@ -531,7 +563,12 @@ def editor_node(state: AgentState):
             "【报告撰写要求】:\n"
             "1. 使用 Markdown 格式编写。\n"
             "2. 报告应包含：标题、摘要、仿真实验设置说明、收敛性与性能指标分析（如果是对比模型，请提供基准模型 vs 对比模型的对比表格，计算各核心指标的绝对与相对改善比例，并对折线趋势图的特点展开点评）、结合参考文献的理论机制分析（说明该算法的核心长处与短板）、总结与改进建议。\n"
-            "3. 数据必须准确，学术词汇专业，文字流畅。\n"
+            "3. 在对仿真曲线进行收敛性与性能指标分析时，必须深度解读并整合由 Analyst 节点提供的“学习曲线收敛性与稳定性数理诊断”指标（包括收敛轮次、稳态均值、标准差、稳态变异系数 CV 等），从控制理论角度进行定量分析。\n"
+            "4. 数据必须准确，学术词汇专业，文字流畅。\n"
+            "5. 当用户的提问中【显式要求】提供公式、代码，或者该报告为需要展示深厚学术底蕴的【深度评估报告】且用户表现出对原理/实现的探讨意向时：\n"
+            "   - 请在报告中提供该算法核心的状态空间 (State)、动作空间 (Action) 以及奖励函数 (Reward) 的 LaTeX 数学公式描述。\n"
+            "   - 请提供一个结构清晰、带有详细中文注释的 PyTorch 核心代码骨架（例如 CoLight 的多头图注意力机制或 MaxPressure 的压力计算逻辑等），使用 markdown 代码块包裹。\n"
+            "   - 若用户仅需要简单的运行指标诊断或未表现出对代码/公式的兴趣，则无需生成，保持报告聚焦于仿真结果分析。\n"
             "请直接输出 Markdown 格式的完整报告（不要在外面包裹三反引号以外的冗余解释性语句）："
         )
     

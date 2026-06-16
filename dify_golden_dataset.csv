@@ -1,0 +1,5 @@
+query,expected_intent,required_keywords
+"请帮我诊断最新的强化学习控制日志并画出收敛图。",DIAGNOSTIC,"平均旅行时间, 吞吐量"
+"什么是 MPLight 的 pressure (车道压力) 定义？它和 MaxPressure 有什么区别？",QUERY_ONLY,"MPLight, MaxPressure"
+"请详细分析 CoLight 协同控制的数学原理，并在回答中给出状态和动作定义的 LaTeX 公式以及它的 PyTorch 核心计算代码骨架。",QUERY_ONLY,"CoLight, class, torch, $"
+"帮我整体分析一下 benchmark_amp 杭州 5816 的种子数据，生成对比曲线并做收敛性与稳定性分析。",DIAGNOSTIC,"变异系数, 稳态, 种子"
