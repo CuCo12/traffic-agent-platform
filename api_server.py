@@ -3,7 +3,7 @@ import sys
 import json
 import uuid
 from typing import Optional
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -45,6 +45,17 @@ class SearchArxivRequest(BaseModel):
 class ReadPaperRequest(BaseModel):
     filename: str = Field(..., description="The filename of the local paper, e.g. 'AlignLight.pdf'")
 
+class StartEvaluationRequest(BaseModel):
+    message: str = Field(..., description="The conversational message or question to run through the first phase of evaluation")
+
+class SubmitApprovalRequest(BaseModel):
+    thread_id: str = Field(..., description="The unique thread ID of the paused evaluation run")
+    baseline_throughput: float = Field(..., description="The validated or modified throughput of the baseline run")
+    baseline_att: float = Field(..., description="The validated or modified ATT of the baseline run")
+    optimized_throughput: Optional[float] = Field(None, description="The validated or modified throughput of the optimized run")
+    optimized_att: Optional[float] = Field(None, description="The validated or modified ATT of the optimized run")
+    review_comment: str = Field("Approved", description="The review comment to resume the workflow with")
+
 class RunGraphRequest(BaseModel):
     message: str = Field(..., description="The conversational message or question to run through the entire multi-agent graph workflow")
 
@@ -61,7 +72,7 @@ def api_analyze_log(req: AnalyzeLogRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/plot_comparison", summary="Generate metrics comparison curves")
-def api_plot_comparison(req: PlotComparisonRequest):
+def api_plot_comparison(req: PlotComparisonRequest, request: Request):
     """
     Generates academic-quality comparison charts for vehicle throughput, average delay, queue length, and speeds, returning the HTTP URL of the image.
     """
@@ -73,7 +84,8 @@ def api_plot_comparison(req: PlotComparisonRequest):
         img_path = plot_metrics_comparison.invoke(tool_input)
         # Convert absolute path to a relative static URL
         image_name = os.path.basename(img_path)
-        image_url = f"http://localhost:8000/static/{image_name}"
+        base_url = str(request.base_url)
+        image_url = f"{base_url}static/{image_name}"
         return {
             "status": "success",
             "image_path": img_path,
@@ -117,7 +129,7 @@ def api_read_paper(req: ReadPaperRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/run_agent_graph", summary="Run multi-agent graph evaluation workflow")
-def api_run_agent_graph(req: RunGraphRequest):
+def api_run_agent_graph(req: RunGraphRequest, request: Request):
     """
     Executes the complete multi-agent graph workflow (Analyst -> Reviewer -> Editor) to generate a full simulation evaluation or academic analysis report.
     """
@@ -149,12 +161,116 @@ def api_run_agent_graph(req: RunGraphRequest):
         comparison_img = final_state.values.get("comparison_img", "")
         image_url = ""
         if comparison_img:
-            image_url = f"http://localhost:8000/static/{os.path.basename(comparison_img)}"
+            base_url = str(request.base_url)
+            image_url = f"{base_url}static/{os.path.basename(comparison_img)}"
             
         return {
             "status": "success",
             "report": report,
             "image_url": image_url
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/start_evaluation", summary="Start first phase of evaluation (suspended at human review)")
+def api_start_evaluation(req: StartEvaluationRequest, request: Request):
+    """
+    Runs the multi-agent graph from entry point (Analyst -> Reviewer) and suspends execution at the editor breakpoint.
+    Returns the thread_id, parsed metrics, and generated comparison chart.
+    """
+    try:
+        thread_id = str(uuid.uuid4())
+        config = {"configurable": {"thread_id": thread_id}}
+        initial_state = {
+            "messages": [HumanMessage(content=req.message)],
+            "retry_count": 0,
+            "baseline_data": {},
+            "optimized_data": {},
+            "comparison_img": "",
+            "review_feedback": "",
+            "final_report": ""
+        }
+        
+        # Stream the graph. It will run through analyst and reviewer, then suspend before editor
+        for event in graph_app.stream(initial_state, config):
+            pass
+            
+        state = graph_app.get_state(config)
+        b_data = state.values.get("baseline_data", {})
+        o_data = state.values.get("optimized_data", {})
+        comparison_img = state.values.get("comparison_img", "")
+        
+        image_url = ""
+        if comparison_img:
+            base_url = str(request.base_url)
+            image_url = f"{base_url}static/{os.path.basename(comparison_img)}"
+            
+        is_paused = bool(state.next)
+        
+        return {
+            "status": "success",
+            "thread_id": thread_id,
+            "is_paused": is_paused,
+            "baseline_data": b_data,
+            "optimized_data": o_data,
+            "image_url": image_url,
+            "next_node": list(state.next) if state.next else []
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/submit_approval", summary="Submit human approval/modifications to resume evaluation and compile report")
+def api_submit_approval(req: SubmitApprovalRequest):
+    """
+    Takes the thread_id and validated/modified metrics, updates the state in the graph database, and resumes execution to write the final academic report.
+    """
+    try:
+        config = {"configurable": {"thread_id": req.thread_id}}
+        state = graph_app.get_state(config)
+        if not state.next:
+            # Graph already completed or invalid state (e.g. query_only)
+            report = state.values.get("final_report", "")
+            return {
+                "status": "success",
+                "message": "Workflow was already completed.",
+                "report": report
+            }
+            
+        b_data = state.values.get("baseline_data", {}).copy()
+        o_data = state.values.get("optimized_data", {}).copy()
+        
+        # Override with human modified values
+        b_data["throughput"] = req.baseline_throughput
+        b_data["avg_delay"] = req.baseline_att
+        b_data["raw_analysis"] += f"\n\n[Dify 人工审批微调]: 吞吐量 {req.baseline_throughput}，ATT {req.baseline_att}. 批注: {req.review_comment}"
+        
+        if o_data and req.optimized_throughput is not None and req.optimized_att is not None:
+            o_data["throughput"] = req.optimized_throughput
+            o_data["avg_delay"] = req.optimized_att
+            o_data["raw_analysis"] += f"\n\n[Dify 人工审批微调]: 吞吐量 {req.optimized_throughput}，ATT {req.optimized_att}."
+            
+        # Update the graph state as the reviewer node
+        graph_app.update_state(
+            config,
+            {
+                "baseline_data": b_data,
+                "optimized_data": o_data if o_data else {},
+                "review_feedback": "PASS"
+            },
+            as_node="reviewer"
+        )
+        
+        # Resume execution (will run the editor node and complete)
+        for event in graph_app.stream(None, config):
+            pass
+            
+        final_state = graph_app.get_state(config)
+        report = final_state.values.get("final_report", "No report generated.")
+        
+        return {
+            "status": "success",
+            "message": "Workflow resumed and completed successfully.",
+            "report": report
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

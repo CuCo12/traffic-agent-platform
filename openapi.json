@@ -233,6 +233,80 @@
           }
         }
       }
+    },
+    "/start_evaluation": {
+      "post": {
+        "summary": "Start first phase of evaluation (suspended at human review)",
+        "description": "Runs the multi-agent graph from entry point (Analyst -> Reviewer) and suspends execution at the editor breakpoint.\nReturns the thread_id, parsed metrics, and generated comparison chart.",
+        "operationId": "api_start_evaluation_start_evaluation_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartEvaluationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/submit_approval": {
+      "post": {
+        "summary": "Submit human approval/modifications to resume evaluation and compile report",
+        "description": "Takes the thread_id and validated/modified metrics, updates the state in the graph database, and resumes execution to write the final academic report.",
+        "operationId": "api_submit_approval_submit_approval_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitApprovalRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -345,6 +419,76 @@
           "query"
         ],
         "title": "SearchLiteratureRequest"
+      },
+      "StartEvaluationRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "The conversational message or question to run through the first phase of evaluation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "StartEvaluationRequest"
+      },
+      "SubmitApprovalRequest": {
+        "properties": {
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id",
+            "description": "The unique thread ID of the paused evaluation run"
+          },
+          "baseline_throughput": {
+            "type": "number",
+            "title": "Baseline Throughput",
+            "description": "The validated or modified throughput of the baseline run"
+          },
+          "baseline_att": {
+            "type": "number",
+            "title": "Baseline Att",
+            "description": "The validated or modified ATT of the baseline run"
+          },
+          "optimized_throughput": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Optimized Throughput",
+            "description": "The validated or modified throughput of the optimized run"
+          },
+          "optimized_att": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Optimized Att",
+            "description": "The validated or modified ATT of the optimized run"
+          },
+          "review_comment": {
+            "type": "string",
+            "title": "Review Comment",
+            "description": "The review comment to resume the workflow with",
+            "default": "Approved"
+          }
+        },
+        "type": "object",
+        "required": [
+          "thread_id",
+          "baseline_throughput",
+          "baseline_att"
+        ],
+        "title": "SubmitApprovalRequest"
       },
       "ValidationError": {
         "properties": {

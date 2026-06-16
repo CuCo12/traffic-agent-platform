@@ -75,17 +75,20 @@ traffic_agent/                  # 交通信号控制智能体主目录
 │   └── docker/
 │       ├── .env                # 包含 NO_PROXY 穿透配置
 │       └── docker-compose.yaml # 包含 extra_hosts 静态网卡映射
-├── papers/                     # 学术论文 PDF 物理库 (用于本地 RAG)
-│   ├── AlignLight.pdf          # 样例论文 (包含计算开销与推理延迟表)
-│   └── ...                     
-├── skills/                     # 封装 of 原子工具库
+├── data/                       # 存放运行仿真日志样例
+│   └── sample_run/             # 提供内置的 benchmark_amp 与 benchmark_ep 仿真日志
+├── papers/                     # 学术论文 PDF 物理库 (用于本地 RAG, 默认 gitignore)
+│   └── AlignLight.pdf          # 样例论文 (包含计算开销与推理延迟表)
+├── skills/                     # 封装的原子工具库
 │   ├── __init__.py
-│   ├── arxiv_searcher.py      # arXiv 联网论文学术爬取器
+│   ├── arxiv_searcher.py       # arXiv 联网论文学术爬取器
 │   └── plotter.py              # 学术级均值标准差阴影折线图绘制器
 ├── agent.py                    # 定义底层原子工具 (CityFlow 解析、RAG 核心)
-├── api_server.py               # FastAPI HTTP 服务网关 (对外暴露 OpenAPI 3.1 规范)
+├── api_server.py               # FastAPI HTTP 服务网关 (对外暴露 OpenAPI 规范)
 ├── app.py                      # 独立 Streamlit 本地交互面板
 ├── openapi.json                # 导出的标准 OpenAPI 接口定义文件
+├── download_papers.py          # 预设论文下载器 (自动拉取基础论文集)
+├── requirements.txt            # 项目 Python 依赖声明清单
 └── multi_agent_graph.py        # LangGraph 多智能体协作流定义与路由状态机
 ```
 
@@ -93,12 +96,15 @@ traffic_agent/                  # 交通信号控制智能体主目录
 
 ## 🚀 快速启动指引 (Quick Start)
 
-### 1. 环境准备
+### 1. 环境准备与依赖安装
 确保您的物理机上已安装 Python 3.10+、Docker Desktop 以及 Git。
 ```bash
 git clone <your-repository-url>
 cd traffic_agent
+# 安装依赖
 pip install -r requirements.txt
+# 下载预设学术论文集以填充本地 RAG 文献库
+python download_papers.py
 ```
 
 ### 2. 启动宿主机 API 服务网关

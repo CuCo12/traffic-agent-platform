@@ -31,9 +31,16 @@ def search_latest_arxiv_papers(query: str) -> str:
             
     formatted_query = urllib.parse.quote(clean_query)
     
-    # 2. 构建 arXiv API 请求 URL 
-    # 设定按提交时间倒序 (sortBy=submittedDate&sortOrder=descending)，取前 3 篇最新论文
-    url = f'http://export.arxiv.org/api/query?search_query={formatted_query}&start=0&max_results=3&sortBy=submittedDate&sortOrder=descending'
+    import os
+    # 2. 从环境变量中读取检索最大结果数量 (默认 3 篇)
+    try:
+        max_results = int(os.getenv("ARXIV_MAX_RESULTS", "3"))
+    except Exception:
+        max_results = 3
+        
+    # 构建 arXiv API 请求 URL 
+    # 设定按提交时间倒序 (sortBy=submittedDate&sortOrder=descending)
+    url = f'http://export.arxiv.org/api/query?search_query={formatted_query}&start=0&max_results={max_results}&sortBy=submittedDate&sortOrder=descending'
     
     try:
         # 3. 发送请求并读取 XML 数据

@@ -31,9 +31,10 @@ def load_local_env():
 
 load_local_env()
 
-# 初始化大模型 (使用 deepseek-chat)
+# 初始化大模型 (自适应从环境变量读取模型名称，默认使用 deepseek-chat)
+llm_model = os.getenv("LLM_MODEL", "deepseek-chat")
 llm = ChatOpenAI(
-    model="deepseek-chat", 
+    model=llm_model, 
     temperature=0.1
 )
 
@@ -216,42 +217,51 @@ def _parse_pdf_with_tables(file_path: str, filename: str) -> list:
         with pdfplumber.open(file_path) as pdf:
             for idx, page in enumerate(pdf.pages):
                 page_text = page.extract_text() or ""
-                tables = page.extract_tables()
-                
-                # 转换表格为 Markdown 格式
                 formatted_tables = []
-                if tables:
-                    for table in tables:
-                        # 过滤掉全为空的行
-                        valid_rows = [[str(cell or '').strip() for cell in row] for row in table if any(cell is not None for cell in row)]
-                        if not valid_rows or len(valid_rows) < 1:
-                            continue
-                        
-                        headers = valid_rows[0]
-                        rows = valid_rows[1:]
-                        
-                        # 计算各列最大宽度，便于对齐
-                        try:
-                            col_widths = [max(len(cell) for cell in col) for col in zip(*valid_rows)]
-                        except Exception:
-                            # 容错：如果行长度不一致，使用平均宽度
-                            col_widths = [10] * len(headers)
+                
+                # 容错：表格处理放入独立的 try-except 块中，即使某页表格解析出错，也不影响该页文本和其他页面的解析
+                try:
+                    tables = page.extract_tables()
+                    if tables:
+                        for table in tables:
+                            if not table:
+                                continue
+                            # 过滤掉全为空的行，并将 cell 转换为 string
+                            valid_rows = [[str(cell or '').strip() for cell in row] for row in table if any(cell is not None for cell in row)]
+                            if not valid_rows or len(valid_rows) < 1:
+                                continue
                             
-                        # 构建 Markdown 表格
-                        hdr_str = " | ".join(f"{cell:<{w}}" for cell, w in zip(headers, col_widths))
-                        sep_str = "-|-".join("-" * w for w in col_widths)
-                        
-                        md_table = f"| {hdr_str} |\n| {sep_str} |\n"
-                        for row in rows:
-                            # 长度补齐或截断，防止维度不匹配报错
-                            if len(row) < len(headers):
-                                row = row + [''] * (len(headers) - len(row))
-                            else:
-                                row = row[:len(headers)]
-                            row_str = " | ".join(f"{cell:<{w}}" for cell, w in zip(row, col_widths))
-                            md_table += f"| {row_str} |\n"
-                        
-                        formatted_tables.append(md_table)
+                            # 统一行列对齐维度：防止每一行的列数不一致导致 zip 计算出错
+                            max_cols = max(len(row) for row in valid_rows)
+                            aligned_rows = []
+                            for row in valid_rows:
+                                if len(row) < max_cols:
+                                    row = row + [''] * (max_cols - len(row))
+                                else:
+                                    row = row[:max_cols]
+                                aligned_rows.append(row)
+                            
+                            headers = aligned_rows[0]
+                            rows = aligned_rows[1:]
+                            
+                            # 计算各列最大宽度，便于对齐
+                            try:
+                                col_widths = [max(len(cell) for cell in col) for col in zip(*aligned_rows)]
+                            except Exception:
+                                col_widths = [10] * len(headers)
+                                
+                            # 构建 Markdown 表格
+                            hdr_str = " | ".join(f"{cell:<{w}}" for cell, w in zip(headers, col_widths))
+                            sep_str = "-|-".join("-" * w for w in col_widths)
+                            
+                            md_table = f"| {hdr_str} |\n| {sep_str} |\n"
+                            for row in rows:
+                                row_str = " | ".join(f"{cell:<{w}}" for cell, w in zip(row, col_widths))
+                                md_table += f"| {row_str} |\n"
+                            
+                            formatted_tables.append(md_table)
+                except Exception:
+                    pass # 忽略报错，防止单页表格格式错误影响全书读取
                 
                 content = page_text
                 if formatted_tables:
@@ -369,11 +379,17 @@ def search_traffic_literature(query: str) -> str:
     # 按得分从高到低进行排序
     scored_segments.sort(key=lambda x: x[0], reverse=True)
     
-    # 取前 15 个最相关的段落送去给大模型精排
-    filtered_segments = [seg for _, seg in scored_segments[:15]]
+    # 从环境变量中获取 RAG 检索的 top-k 数量 (默认为 15)
+    try:
+        top_k = int(os.getenv("RAG_TOP_K", "15"))
+    except Exception:
+        top_k = 15
+        
+    # 取前 top_k 个最相关的段落送去给大模型精排
+    filtered_segments = [seg for _, seg in scored_segments[:top_k]]
 
     if not filtered_segments:
-        filtered_segments = all_segments[:15]  # 保底策略
+        filtered_segments = all_segments[:top_k]  # 保底策略
 
     # 3. 构建大模型重排 Prompt
     rerank_prompt = (
