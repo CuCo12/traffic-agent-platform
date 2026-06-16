@@ -32,7 +32,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeLogResponse"
+                }
               }
             }
           },
@@ -69,7 +71,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/PlotComparisonResponse"
+                }
               }
             }
           },
@@ -106,7 +110,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/SearchLiteratureResponse"
+                }
               }
             }
           },
@@ -143,7 +149,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/SearchArxivResponse"
+                }
               }
             }
           },
@@ -180,7 +188,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ReadPaperResponse"
+                }
               }
             }
           },
@@ -217,7 +227,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/RunAgentGraphResponse"
+                }
               }
             }
           },
@@ -254,7 +266,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/StartEvaluationResponse"
+                }
               }
             }
           },
@@ -291,7 +305,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/SubmitApprovalResponse"
+                }
               }
             }
           },
@@ -324,6 +340,27 @@
           "log_path"
         ],
         "title": "AnalyzeLogRequest"
+      },
+      "AnalyzeLogResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Execution status"
+          },
+          "result": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Result",
+            "description": "The parsed traffic metrics including ATT, throughput, etc."
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "result"
+        ],
+        "title": "AnalyzeLogResponse"
       },
       "HTTPValidationError": {
         "properties": {
@@ -364,6 +401,38 @@
         ],
         "title": "PlotComparisonRequest"
       },
+      "PlotComparisonResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Execution status"
+          },
+          "image_path": {
+            "type": "string",
+            "title": "Image Path",
+            "description": "The local absolute path of the generated image"
+          },
+          "image_url": {
+            "type": "string",
+            "title": "Image Url",
+            "description": "The HTTP URL to access the comparison image"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status or feedback message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "image_path",
+          "image_url",
+          "message"
+        ],
+        "title": "PlotComparisonResponse"
+      },
       "ReadPaperRequest": {
         "properties": {
           "filename": {
@@ -377,6 +446,52 @@
           "filename"
         ],
         "title": "ReadPaperRequest"
+      },
+      "ReadPaperResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Execution status"
+          },
+          "result": {
+            "type": "string",
+            "title": "Result",
+            "description": "The complete text content of the requested local paper"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "result"
+        ],
+        "title": "ReadPaperResponse"
+      },
+      "RunAgentGraphResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Execution status"
+          },
+          "report": {
+            "type": "string",
+            "title": "Report",
+            "description": "The final academic analysis or simulation evaluation report in Markdown format"
+          },
+          "image_url": {
+            "type": "string",
+            "title": "Image Url",
+            "description": "The HTTP URL of the generated metrics comparison image"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "report",
+          "image_url"
+        ],
+        "title": "RunAgentGraphResponse"
       },
       "RunGraphRequest": {
         "properties": {
@@ -406,6 +521,26 @@
         ],
         "title": "SearchArxivRequest"
       },
+      "SearchArxivResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Execution status"
+          },
+          "result": {
+            "type": "string",
+            "title": "Result",
+            "description": "The search results and summaries from arXiv"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "result"
+        ],
+        "title": "SearchArxivResponse"
+      },
       "SearchLiteratureRequest": {
         "properties": {
           "query": {
@@ -420,6 +555,26 @@
         ],
         "title": "SearchLiteratureRequest"
       },
+      "SearchLiteratureResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Execution status"
+          },
+          "result": {
+            "type": "string",
+            "title": "Result",
+            "description": "Retrieved paper paragraphs and RAG context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "result"
+        ],
+        "title": "SearchLiteratureResponse"
+      },
       "StartEvaluationRequest": {
         "properties": {
           "message": {
@@ -433,6 +588,61 @@
           "message"
         ],
         "title": "StartEvaluationRequest"
+      },
+      "StartEvaluationResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Execution status"
+          },
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id",
+            "description": "The unique thread ID of the paused evaluation run"
+          },
+          "is_paused": {
+            "type": "boolean",
+            "title": "Is Paused",
+            "description": "Whether the workflow has paused at the human review breakpoint"
+          },
+          "baseline_data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Baseline Data",
+            "description": "The parsed simulation metrics of the baseline run"
+          },
+          "optimized_data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Optimized Data",
+            "description": "The parsed simulation metrics of the optimized run"
+          },
+          "image_url": {
+            "type": "string",
+            "title": "Image Url",
+            "description": "The HTTP URL of the generated metrics comparison image"
+          },
+          "next_node": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Next Node",
+            "description": "The name of the next node in the graph, e.g., ['editor']"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "thread_id",
+          "is_paused",
+          "baseline_data",
+          "optimized_data",
+          "image_url",
+          "next_node"
+        ],
+        "title": "StartEvaluationResponse"
       },
       "SubmitApprovalRequest": {
         "properties": {
@@ -489,6 +699,32 @@
           "baseline_att"
         ],
         "title": "SubmitApprovalRequest"
+      },
+      "SubmitApprovalResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Execution status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Feedback message"
+          },
+          "report": {
+            "type": "string",
+            "title": "Report",
+            "description": "The generated final academic report in Markdown format"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "message",
+          "report"
+        ],
+        "title": "SubmitApprovalResponse"
       },
       "ValidationError": {
         "properties": {

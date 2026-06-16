@@ -2,7 +2,7 @@ import os
 import sys
 import json
 import uuid
-from typing import Optional
+from typing import Optional, List, Dict
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -59,8 +59,50 @@ class SubmitApprovalRequest(BaseModel):
 class RunGraphRequest(BaseModel):
     message: str = Field(..., description="The conversational message or question to run through the entire multi-agent graph workflow")
 
+# Models for response body
+class AnalyzeLogResponse(BaseModel):
+    status: str = Field(..., description="Execution status")
+    result: Dict = Field(..., description="The parsed traffic metrics including ATT, throughput, etc.")
+
+class PlotComparisonResponse(BaseModel):
+    status: str = Field(..., description="Execution status")
+    image_path: str = Field(..., description="The local absolute path of the generated image")
+    image_url: str = Field(..., description="The HTTP URL to access the comparison image")
+    message: str = Field(..., description="Status or feedback message")
+
+class SearchLiteratureResponse(BaseModel):
+    status: str = Field(..., description="Execution status")
+    result: str = Field(..., description="Retrieved paper paragraphs and RAG context")
+
+class SearchArxivResponse(BaseModel):
+    status: str = Field(..., description="Execution status")
+    result: str = Field(..., description="The search results and summaries from arXiv")
+
+class ReadPaperResponse(BaseModel):
+    status: str = Field(..., description="Execution status")
+    result: str = Field(..., description="The complete text content of the requested local paper")
+
+class RunAgentGraphResponse(BaseModel):
+    status: str = Field(..., description="Execution status")
+    report: str = Field(..., description="The final academic analysis or simulation evaluation report in Markdown format")
+    image_url: str = Field(..., description="The HTTP URL of the generated metrics comparison image")
+
+class StartEvaluationResponse(BaseModel):
+    status: str = Field(..., description="Execution status")
+    thread_id: str = Field(..., description="The unique thread ID of the paused evaluation run")
+    is_paused: bool = Field(..., description="Whether the workflow has paused at the human review breakpoint")
+    baseline_data: Dict = Field(..., description="The parsed simulation metrics of the baseline run")
+    optimized_data: Dict = Field(..., description="The parsed simulation metrics of the optimized run")
+    image_url: str = Field(..., description="The HTTP URL of the generated metrics comparison image")
+    next_node: List[str] = Field(..., description="The name of the next node in the graph, e.g., ['editor']")
+
+class SubmitApprovalResponse(BaseModel):
+    status: str = Field(..., description="Execution status")
+    message: str = Field(..., description="Feedback message")
+    report: str = Field(..., description="The generated final academic report in Markdown format")
+
 # Router endpoints
-@app.post("/analyze_log", summary="Extract CityFlow simulation metrics")
+@app.post("/analyze_log", summary="Extract CityFlow simulation metrics", response_model=AnalyzeLogResponse)
 def api_analyze_log(req: AnalyzeLogRequest):
     """
     Parses and extracts key traffic metrics (like ATT, throughput, etc.) from the training history log folder.
@@ -71,7 +113,7 @@ def api_analyze_log(req: AnalyzeLogRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/plot_comparison", summary="Generate metrics comparison curves")
+@app.post("/plot_comparison", summary="Generate metrics comparison curves", response_model=PlotComparisonResponse)
 def api_plot_comparison(req: PlotComparisonRequest, request: Request):
     """
     Generates academic-quality comparison charts for vehicle throughput, average delay, queue length, and speeds, returning the HTTP URL of the image.
@@ -95,7 +137,7 @@ def api_plot_comparison(req: PlotComparisonRequest, request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/search_literature", summary="Retrieve literature text using local RAG")
+@app.post("/search_literature", summary="Retrieve literature text using local RAG", response_model=SearchLiteratureResponse)
 def api_search_literature(req: SearchLiteratureRequest):
     """
     Searches the local PDF library for traffic signal control algorithms and methods, retrieving relevant paper paragraphs.
@@ -106,7 +148,7 @@ def api_search_literature(req: SearchLiteratureRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/search_arxiv", summary="Search arXiv academic library online")
+@app.post("/search_arxiv", summary="Search arXiv academic library online", response_model=SearchArxivResponse)
 def api_search_arxiv(req: SearchArxivRequest):
     """
     Searches the online arXiv repository for the latest academic papers.
@@ -117,7 +159,7 @@ def api_search_arxiv(req: SearchArxivRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/read_paper", summary="Read the full content of a local paper")
+@app.post("/read_paper", summary="Read the full content of a local paper", response_model=ReadPaperResponse)
 def api_read_paper(req: ReadPaperRequest):
     """
     Reads and returns the complete text content of a specified local paper in the papers directory.
@@ -128,7 +170,7 @@ def api_read_paper(req: ReadPaperRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/run_agent_graph", summary="Run multi-agent graph evaluation workflow")
+@app.post("/run_agent_graph", summary="Run multi-agent graph evaluation workflow", response_model=RunAgentGraphResponse)
 def api_run_agent_graph(req: RunGraphRequest, request: Request):
     """
     Executes the complete multi-agent graph workflow (Analyst -> Reviewer -> Editor) to generate a full simulation evaluation or academic analysis report.
@@ -173,7 +215,7 @@ def api_run_agent_graph(req: RunGraphRequest, request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/start_evaluation", summary="Start first phase of evaluation (suspended at human review)")
+@app.post("/start_evaluation", summary="Start first phase of evaluation (suspended at human review)", response_model=StartEvaluationResponse)
 def api_start_evaluation(req: StartEvaluationRequest, request: Request):
     """
     Runs the multi-agent graph from entry point (Analyst -> Reviewer) and suspends execution at the editor breakpoint.
@@ -220,7 +262,7 @@ def api_start_evaluation(req: StartEvaluationRequest, request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/submit_approval", summary="Submit human approval/modifications to resume evaluation and compile report")
+@app.post("/submit_approval", summary="Submit human approval/modifications to resume evaluation and compile report", response_model=SubmitApprovalResponse)
 def api_submit_approval(req: SubmitApprovalRequest, request: Request):
     """
     Takes the thread_id and validated/modified metrics, updates the state in the graph database, and resumes execution to write the final academic report.
