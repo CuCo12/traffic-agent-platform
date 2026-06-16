@@ -1,17 +1,17 @@
 # Traffic Agent Evaluation Harness Run Report
 
-- **Run Timestamp**: 2026-06-16 15:56:16
+- **Run Timestamp**: 2026-06-16 23:07:05
 - **Success Rate**: 100.0% (4/4 Passed)
-- **Average Execution Latency**: 25.53s
+- **Average Execution Latency**: 26.34s
 
 ## Summary Table
 
 | Test Case | Category | Expected Intent | Actual Intent | Image Gen? | Latency | Status | Notes / Failures |
 |---|---|---|---|---|---|---|---|
-| TC001 | Simulation Diagnostic | `DIAGNOSTIC` | `DIAGNOSTIC` | True | 25.0s | ✅ | N/A |
-| TC002 | Academic Query (Basic) | `QUERY_ONLY` | `QUERY_ONLY` | False | 18.7s | ✅ | N/A |
-| TC003 | Academic Query (LaTeX & PyTorch) | `QUERY_ONLY` | `QUERY_ONLY` | False | 30.6s | ✅ | N/A |
-| TC004 | Multi-Seed Diagnostic | `DIAGNOSTIC` | `DIAGNOSTIC` | True | 27.8s | ✅ | N/A |
+| TC001 | Simulation Diagnostic | `DIAGNOSTIC` | `DIAGNOSTIC` | True | 35.8s | ✅ | N/A |
+| TC002 | Academic Query (Basic) | `QUERY_ONLY` | `QUERY_ONLY` | False | 15.3s | ✅ | N/A |
+| TC003 | Academic Query (LaTeX & PyTorch) | `QUERY_ONLY` | `QUERY_ONLY` | False | 26.8s | ✅ | N/A |
+| TC004 | Multi-Seed Diagnostic | `DIAGNOSTIC` | `DIAGNOSTIC` | True | 27.5s | ✅ | N/A |
 
 ## Detailed Test Case Output Previews
 
@@ -24,7 +24,7 @@
 
 ## 摘要
 
-本报告针对基于深度强化学习（DRL）的交通信号控制模型在 `anon_28_7_newyork_real_double_05_26_12_05_03-nojoin0` 路网场景下的训练日志进行系统性诊断。通过分析 80 轮训练过程中的关键性能指标（平均旅行时间、平均行车速度、平均排队长度、总停车次数、车辆吞吐量），并结合学习曲线的收敛性与稳定性数理诊断，评估模型的控制性能与训练质量。结果表明，模型在第 66 轮后进...
+本报告基于 CityFlow 仿真平台，对最新训练的深度强化学习交通信号控制模型（模型路径：`anon_28_7_newyork_real_double_05_26_12_05_03-nojoin0`）进行了全面的收敛性与性能诊断。通过分析 80 轮训练日志，模型在平均旅行时间（ATT）上实现了 **54.0%** 的显著降低（从 1964.41 秒降至 903.07 秒），平均行车速度提升 **133.2%**，...
   ```
 
 ---
@@ -33,13 +33,13 @@
 - **Execution Status**: ✅ PASSED
 - **Output Report Preview**:
   ```markdown
-  好的，作为一名交通信号控制研究员，我将为您详细解答 MPLight 中的“压力 (Pressure)”定义及其与经典 MaxPressure 控制的区别。
+  好的，作为一名交通信号控制研究员，我将为您详细解答 MPLight 中的“压力”（Pressure）定义，并深入剖析其与经典 MaxPressure 控制方法的区别。
 
 ### MPLight 中的压力 (Pressure) 定义
 
-MPLight (Chen et al., 2020) 的核心创新在于将交通工程中经典的 **MaxPressure 控制理论** 与 **深度强化学习 (Deep RL)** 相结合。其“压力”的定义直接源于 MaxPressure 理论，但应用方式有所不同。
+MPLight 中的“压力”概念直接源于交通工程领域的 **MaxPressure 控制理论**。在 MPLight 中，压力被用作强化学习（RL）智能体的**状态（State）**和**奖励（Reward）**的核心组成部分。
 
-**1. 交...
+**1. 车道/相位压力 (Lan...
   ```
 
 ---
@@ -48,11 +48,11 @@ MPLight (Chen et al., 2020) 的核心创新在于将交通工程中经典的 **M
 - **Execution Status**: ✅ PASSED
 - **Output Report Preview**:
   ```markdown
-  好的，作为一名顶尖的交通信号控制研究员和学术主编，我将为您详细解析 CoLight 协同控制的数学原理，并提供其核心的数学定义与代码实现。
+  好的，作为一名顶尖的交通信号控制研究员和学术主编，我将为您详细分析 CoLight 协同控制的数学原理，并提供其核心的数学定义与代码实现。
 
-### CoLight: 基于图注意力网络的协同信号控制原理深度解析
+### CoLight: 基于图注意力网络的网络级协同信号控制
 
-CoLight (Wei et al., 2019) 的核心创新在于，它利用**图注意力网络 (Graph Attention Network, GAT)** 来建模交通信号灯之间的动态协同关系。与传统的将相邻路口信息简单拼接的方法不同，CoLight 能够学习到不同邻居路口对目标路口...
+CoLight (Wei et al., 2019) 的核心创新在于，它利用图注意力网络（Graph Attention Network, GAT）来建模交通信号灯之间的动态协同关系。与传统的将相邻路口信息简单拼接的方法不同，CoLight 能够学习到不同邻居路口对目标路口影响的**时空动态...
   ```
 
 ---
@@ -61,11 +61,11 @@ CoLight (Wei et al., 2019) 的核心创新在于，它利用**图注意力网络
 - **Execution Status**: ✅ PASSED
 - **Output Report Preview**:
   ```markdown
-  # 自动化仿真评估报告：杭州 5816 路网多种子联合收敛性与稳定性分析
+  # 自动化仿真评估报告：杭州 5816 路网多种子收敛性与稳定性分析
 
 ## 摘要
 
-本报告基于 CityFlow 仿真平台，对 `benchmark_amp` 场景下杭州 `anon_4_4_hangzhou_real_5816` 路网的三种子运行数据进行联合分析。通过多种子聚合统计与单种子学习曲线深度诊断，系统评估了模型在平均旅行时间（ATT）、车辆吞吐量（Throughput）等核心指标上的收敛性能与稳态稳定性。分析表明，模型在 80 轮训练后已进入稳态收敛，平均旅行时间较初始阶段下降...
+本报告基于 CityFlow 仿真平台，对 `benchmark_amp` 场景下杭州 `anon_4_4_hangzhou_real_5816` 路网的三种子运行数据进行全面的收敛性与稳定性评估。通过多种子联合分析，报告揭示了模型在平均旅行时间（ATT）、车辆吞吐量、平均延时、排队长度及停车次数等核心指标上的表现。数理诊断表明，模型在训练第 39 轮后进入稳态，稳态变异系数（CV）为 7.31%，体现了良好的...
   ```
 
 ---

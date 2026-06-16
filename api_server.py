@@ -13,8 +13,8 @@ if CURRENT_DIR not in sys.path:
     sys.path.append(CURRENT_DIR)
 
 from agent import analyze_cityflow_log, search_traffic_literature, read_local_paper_content
-from skills.arxiv_searcher import search_latest_arxiv_papers
-from skills.plotter import plot_metrics_comparison
+from tools.arxiv_searcher import search_latest_arxiv_papers
+from tools.plotter import plot_metrics_comparison
 from multi_agent_graph import app as graph_app
 from langchain_core.messages import HumanMessage
 

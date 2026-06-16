@@ -3,7 +3,7 @@ import sys
 import json
 from langchain_openai import ChatOpenAI
 from langchain.tools import tool
-from skills.arxiv_searcher import search_latest_arxiv_papers
+from tools.arxiv_searcher import search_latest_arxiv_papers
 
 try:
     from langchain.agents import initialize_agent, AgentType

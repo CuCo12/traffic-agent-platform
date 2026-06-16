@@ -79,10 +79,15 @@ traffic_agent/                  # 交通信号控制智能体主目录
 │   └── sample_run/             # 提供内置的 benchmark_amp 与 benchmark_ep 仿真日志
 ├── papers/                     # 学术论文 PDF 物理库 (用于本地 RAG, 默认 gitignore)
 │   └── AlignLight.pdf          # 样例论文 (包含计算开销与推理延迟表)
-├── skills/                     # 封装的原子工具库
+├── tools/                      # 物理执行工具库 (物理计算、图表生成、arXiv 爬取)
 │   ├── __init__.py
-│   ├── arxiv_searcher.py       # arXiv 联网论文学术爬取器
-│   └── plotter.py              # 学术级均值标准差阴影折线图绘制器
+│   ├── arxiv_searcher.py       # arXiv 联网文献检索工具
+│   ├── plotter.py              # 学术级对比曲线图绘制工具
+│   └── drl_analyzer.py         # 深度强化学习曲线数学收敛计算工具
+├── skills/                     # 大模型高阶认知技能库 (由 Prompt 驱动的思考逻辑)
+│   ├── query_rewriter.py       # 学术意图多轮检索重写技能
+│   ├── drl_diagnostician.py    # 控制理论数理诊断定性分析技能
+│   └── report_editor.py        # 学术评估报告系统 prompt 与按需生成技能
 ├── agent.py                    # 定义底层原子工具 (CityFlow 解析、RAG 核心)
 ├── api_server.py               # FastAPI HTTP 服务网关 (对外暴露 OpenAPI 规范)
 ├── app.py                      # 独立 Streamlit 本地交互面板
