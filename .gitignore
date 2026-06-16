@@ -39,3 +39,7 @@ dify-main/docker/volumes/weaviate/
 *.zip
 *.tar.gz
 *.7z
+
+# Academic papers and parsing caches (Bloats repo and has copyright risks)
+papers/*.pdf
+papers_cache.json
