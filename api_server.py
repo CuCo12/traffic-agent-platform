@@ -163,6 +163,7 @@ def api_run_agent_graph(req: RunGraphRequest, request: Request):
         if comparison_img:
             base_url = str(request.base_url)
             image_url = f"{base_url}static/{os.path.basename(comparison_img)}"
+            report += f"\n\n![仿真指标对比图]({image_url})"
             
         return {
             "status": "success",
@@ -220,7 +221,7 @@ def api_start_evaluation(req: StartEvaluationRequest, request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/submit_approval", summary="Submit human approval/modifications to resume evaluation and compile report")
-def api_submit_approval(req: SubmitApprovalRequest):
+def api_submit_approval(req: SubmitApprovalRequest, request: Request):
     """
     Takes the thread_id and validated/modified metrics, updates the state in the graph database, and resumes execution to write the final academic report.
     """
@@ -266,6 +267,11 @@ def api_submit_approval(req: SubmitApprovalRequest):
             
         final_state = graph_app.get_state(config)
         report = final_state.values.get("final_report", "No report generated.")
+        comparison_img = final_state.values.get("comparison_img", "")
+        if comparison_img:
+            base_url = str(request.base_url)
+            image_url = f"{base_url}static/{os.path.basename(comparison_img)}"
+            report += f"\n\n![仿真指标对比图]({image_url})"
         
         return {
             "status": "success",
