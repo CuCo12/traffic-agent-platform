@@ -626,19 +626,19 @@
             "description": "The unique thread ID of the paused evaluation run"
           },
           "baseline_throughput": {
-            "type": "number",
+            "type": "string",
             "title": "Baseline Throughput",
             "description": "The validated or modified throughput of the baseline run"
           },
           "baseline_att": {
-            "type": "number",
+            "type": "string",
             "title": "Baseline Att",
             "description": "The validated or modified ATT of the baseline run"
           },
           "optimized_throughput": {
             "anyOf": [
               {
-                "type": "number"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -650,7 +650,7 @@
           "optimized_att": {
             "anyOf": [
               {
-                "type": "number"
+                "type": "string"
               },
               {
                 "type": "null"

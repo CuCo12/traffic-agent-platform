@@ -51,10 +51,10 @@ class StartEvaluationRequest(BaseModel):
 
 class SubmitApprovalRequest(BaseModel):
     thread_id: str = Field(..., description="The unique thread ID of the paused evaluation run")
-    baseline_throughput: float = Field(..., description="The validated or modified throughput of the baseline run")
-    baseline_att: float = Field(..., description="The validated or modified ATT of the baseline run")
-    optimized_throughput: Optional[float] = Field(None, description="The validated or modified throughput of the optimized run")
-    optimized_att: Optional[float] = Field(None, description="The validated or modified ATT of the optimized run")
+    baseline_throughput: str = Field(..., description="The validated or modified throughput of the baseline run")
+    baseline_att: str = Field(..., description="The validated or modified ATT of the baseline run")
+    optimized_throughput: Optional[str] = Field(None, description="The validated or modified throughput of the optimized run")
+    optimized_att: Optional[str] = Field(None, description="The validated or modified ATT of the optimized run")
     review_comment: str = Field("Approved", description="The review comment to resume the workflow with")
 
 class RunGraphRequest(BaseModel):
@@ -276,13 +276,13 @@ def api_submit_approval(req: SubmitApprovalRequest, request: Request):
         o_data = state.values.get("optimized_data", {}).copy()
         
         # Override with human modified values
-        b_data["throughput"] = req.baseline_throughput
-        b_data["avg_delay"] = req.baseline_att
+        b_data["throughput"] = float(req.baseline_throughput)
+        b_data["avg_delay"] = float(req.baseline_att)
         b_data["raw_analysis"] += f"\n\n[Dify 人工审批微调]: 吞吐量 {req.baseline_throughput}，ATT {req.baseline_att}. 批注: {req.review_comment}"
         
-        if o_data and req.optimized_throughput is not None and req.optimized_att is not None:
-            o_data["throughput"] = req.optimized_throughput
-            o_data["avg_delay"] = req.optimized_att
+        if o_data and req.optimized_throughput and req.optimized_att:
+            o_data["throughput"] = float(req.optimized_throughput)
+            o_data["avg_delay"] = float(req.optimized_att)
             o_data["raw_analysis"] += f"\n\n[Dify 人工审批微调]: 吞吐量 {req.optimized_throughput}，ATT {req.optimized_att}."
             
         # Update the graph state as the reviewer node
