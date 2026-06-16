@@ -226,9 +226,9 @@
           "200": {
             "description": "Successful Response",
             "content": {
-              "application/json": {
+              "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/RunAgentGraphResponse"
+                  "type": "string"
                 }
               }
             }
@@ -304,9 +304,9 @@
           "200": {
             "description": "Successful Response",
             "content": {
-              "application/json": {
+              "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SubmitApprovalResponse"
+                  "type": "string"
                 }
               }
             }
@@ -466,32 +466,6 @@
           "result"
         ],
         "title": "ReadPaperResponse"
-      },
-      "RunAgentGraphResponse": {
-        "properties": {
-          "status": {
-            "type": "string",
-            "title": "Status",
-            "description": "Execution status"
-          },
-          "report": {
-            "type": "string",
-            "title": "Report",
-            "description": "The final academic analysis or simulation evaluation report in Markdown format"
-          },
-          "image_url": {
-            "type": "string",
-            "title": "Image Url",
-            "description": "The HTTP URL of the generated metrics comparison image"
-          }
-        },
-        "type": "object",
-        "required": [
-          "status",
-          "report",
-          "image_url"
-        ],
-        "title": "RunAgentGraphResponse"
       },
       "RunGraphRequest": {
         "properties": {
@@ -699,32 +673,6 @@
           "baseline_att"
         ],
         "title": "SubmitApprovalRequest"
-      },
-      "SubmitApprovalResponse": {
-        "properties": {
-          "status": {
-            "type": "string",
-            "title": "Status",
-            "description": "Execution status"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message",
-            "description": "Feedback message"
-          },
-          "report": {
-            "type": "string",
-            "title": "Report",
-            "description": "The generated final academic report in Markdown format"
-          }
-        },
-        "type": "object",
-        "required": [
-          "status",
-          "message",
-          "report"
-        ],
-        "title": "SubmitApprovalResponse"
       },
       "ValidationError": {
         "properties": {

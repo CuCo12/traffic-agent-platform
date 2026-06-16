@@ -4,6 +4,7 @@ import json
 import uuid
 from typing import Optional, List, Dict
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -170,7 +171,7 @@ def api_read_paper(req: ReadPaperRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/run_agent_graph", summary="Run multi-agent graph evaluation workflow", response_model=RunAgentGraphResponse)
+@app.post("/run_agent_graph", summary="Run multi-agent graph evaluation workflow", response_class=PlainTextResponse)
 def api_run_agent_graph(req: RunGraphRequest, request: Request):
     """
     Executes the complete multi-agent graph workflow (Analyst -> Reviewer -> Editor) to generate a full simulation evaluation or academic analysis report.
@@ -207,11 +208,7 @@ def api_run_agent_graph(req: RunGraphRequest, request: Request):
             image_url = f"{base_url}static/{os.path.basename(comparison_img)}"
             report += f"\n\n![仿真指标对比图]({image_url})"
             
-        return {
-            "status": "success",
-            "report": report,
-            "image_url": image_url
-        }
+        return report
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -262,7 +259,7 @@ def api_start_evaluation(req: StartEvaluationRequest, request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/submit_approval", summary="Submit human approval/modifications to resume evaluation and compile report", response_model=SubmitApprovalResponse)
+@app.post("/submit_approval", summary="Submit human approval/modifications to resume evaluation and compile report", response_class=PlainTextResponse)
 def api_submit_approval(req: SubmitApprovalRequest, request: Request):
     """
     Takes the thread_id and validated/modified metrics, updates the state in the graph database, and resumes execution to write the final academic report.
@@ -273,11 +270,7 @@ def api_submit_approval(req: SubmitApprovalRequest, request: Request):
         if not state.next:
             # Graph already completed or invalid state (e.g. query_only)
             report = state.values.get("final_report", "")
-            return {
-                "status": "success",
-                "message": "Workflow was already completed.",
-                "report": report
-            }
+            return report
             
         b_data = state.values.get("baseline_data", {}).copy()
         o_data = state.values.get("optimized_data", {}).copy()
@@ -315,11 +308,7 @@ def api_submit_approval(req: SubmitApprovalRequest, request: Request):
             image_url = f"{base_url}static/{os.path.basename(comparison_img)}"
             report += f"\n\n![仿真指标对比图]({image_url})"
         
-        return {
-            "status": "success",
-            "message": "Workflow resumed and completed successfully.",
-            "report": report
-        }
+        return report
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
