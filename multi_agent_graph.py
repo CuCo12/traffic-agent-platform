@@ -223,7 +223,7 @@ def data_analyst_node(state: AgentState):
         }
 
     def get_drl_analysis(p):
-        from skills.drl_diagnostician import diagnose_drl_history
+        from tools.drl_diagnostician import diagnose_drl_history
         res = diagnose_drl_history(p)
         if res.get("summary", "").startswith("⚠️"):
             return None
@@ -453,7 +453,7 @@ def editor_node(state: AgentState):
     # 如果确定需要检索文献，则进行检索词重写
     search_query = user_question
     if need_literature:
-        from skills.query_rewriter import rewrite_query_for_rag
+        from tools.query_rewriter import rewrite_query_for_rag
         try:
             rewritten = rewrite_query_for_rag(chat_messages, user_question, llm)
             if rewritten and rewritten != user_question:
@@ -508,7 +508,7 @@ def editor_node(state: AgentState):
             
     log_progress("🧠 **[主编 Agent]** 正在调用大模型流式撰写最终文档...")
     
-    from skills.report_editor import compile_academic_report, compile_academic_report_stream
+    from tools.report_editor import compile_academic_report, compile_academic_report_stream
     
     import sys
     streamlit_active = 'streamlit' in sys.modules
