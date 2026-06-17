@@ -22,6 +22,8 @@ env/
 # Output / generated temporary files
 evaluation_report.md
 traffic_comparison.png
+eval_output_*.md
+agent_evaluation_report.md
 
 # Dify local configurations and data volumes (CRITICAL to ignore to prevent leak and large commits)
 .env
