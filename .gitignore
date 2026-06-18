@@ -45,3 +45,9 @@ dify-main/docker/volumes/weaviate/
 # Academic papers and parsing caches (Bloats repo and has copyright risks)
 papers/*.pdf
 papers_cache.json
+
+# Personal interview preparation materials (private, local use only)
+interview_prep.md
+interview_prep.pdf
+面试可能的真题.docx
+面试可能的真题.txt
