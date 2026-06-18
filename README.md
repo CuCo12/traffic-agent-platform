@@ -77,8 +77,6 @@ traffic_agent/                  # 交通信号控制智能体主目录
 │       └── docker-compose.yaml # 包含 extra_hosts 静态网卡映射
 ├── data/                       # 存放运行仿真日志样例
 │   └── sample_run/             # 提供内置的 benchmark_amp 与 benchmark_ep 仿真日志
-├── papers/                     # 学术论文 PDF 物理库 (用于本地 RAG, 默认 gitignore)
-│   └── AlignLight.pdf          # 样例论文 (包含计算开销与推理延迟表)
 ├── tools/                      # 执行工具库 (包括绘图、数理诊断、RAG意图重写、报告生成等)
 │   ├── __init__.py
 │   ├── arxiv_searcher.py       # arXiv 联网文献检索工具
